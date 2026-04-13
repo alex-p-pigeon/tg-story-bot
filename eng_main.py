@@ -56,12 +56,9 @@ import spacy
 from config_reader import config
 import selfFunctions as myF
 import prompt as myP
-import rmndr_msg as myRemn
 #import fDB as myDB
 import fpgDB as pgDB
-import fPayment as myPay
-from handlers import tech_router, r_native, r_start, r_oth, r_learnpath #, r_curriculum
-#from handlers.learnpath import r_learnpath
+from handlers import r_oth, r_learnpath
 from states import myState
 import classes as myClass
 
@@ -264,12 +261,8 @@ async def main():
     dp.message.middleware(myClass.DispatcherMiddleware(dp))     # Register middleware to inject dispatcher
     dp.callback_query.middleware(myClass.DispatcherMiddleware(dp))  # Add this line for callback queries
 
-    main_router.include_router(tech_router)
-    #main_router.include_router(r_curriculum)
     main_router.include_router(r_learnpath)
-    main_router.include_router(r_start)
     main_router.include_router(r_oth)
-    main_router.include_router(r_native)
     dp.include_router(main_router)
 
     maintenance_middleware = MaintenanceMiddleware(
