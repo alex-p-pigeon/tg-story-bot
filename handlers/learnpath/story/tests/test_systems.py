@@ -8,9 +8,10 @@ import json
 from datetime import datetime, timedelta
 
 import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 
-sys.path.append('..')
-from systems.narrator_system import NarratorSystem
+from handlers.learnpath.story.systems.narrator_system import NarratorSystem
 
 
 # ============================================================================
@@ -114,7 +115,8 @@ class TestNarratorSystem:
         """Тест успешной генерации подсказки"""
 
         with patch('selfFunctions.afSendMsg2AI', new_callable=AsyncMock) as mock_ai, \
-                patch.object(narrator_system, '_get_recent_actions', new_callable=AsyncMock) as mock_actions:
+                patch.object(narrator_system, '_get_recent_actions', new_callable=AsyncMock) as mock_actions, \
+                patch('selfFunctions.fGetUserEngLevel', new_callable=AsyncMock, return_value=3):
             mock_ai.return_value = json.dumps(sample_hint_response)
             mock_actions.return_value = []
 
@@ -145,7 +147,8 @@ class TestNarratorSystem:
         """Тест генерации подсказки с удалением markdown"""
 
         with patch('selfFunctions.afSendMsg2AI', new_callable=AsyncMock) as mock_ai, \
-                patch.object(narrator_system, '_get_recent_actions', new_callable=AsyncMock) as mock_actions:
+                patch.object(narrator_system, '_get_recent_actions', new_callable=AsyncMock) as mock_actions, \
+                patch('selfFunctions.fGetUserEngLevel', new_callable=AsyncMock, return_value=3):
             # AI возвращает JSON в markdown
             mock_ai.return_value = f"```json\n{json.dumps(sample_hint_response)}\n```"
             mock_actions.return_value = []
@@ -170,7 +173,8 @@ class TestNarratorSystem:
         """Тест генерации подсказки с невалидным JSON (fallback)"""
 
         with patch('selfFunctions.afSendMsg2AI', new_callable=AsyncMock) as mock_ai, \
-                patch.object(narrator_system, '_get_recent_actions', new_callable=AsyncMock) as mock_actions:
+                patch.object(narrator_system, '_get_recent_actions', new_callable=AsyncMock) as mock_actions, \
+                patch('selfFunctions.fGetUserEngLevel', new_callable=AsyncMock, return_value=3):
             mock_ai.return_value = "This is not JSON!"
             mock_actions.return_value = []
 

@@ -7,9 +7,10 @@ from unittest.mock import Mock, AsyncMock, patch
 import json
 
 import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 
-sys.path.append('..')
-from engines.dialogue_engine import DialogueEngine
+from handlers.learnpath.story.engines.dialogue_engine import DialogueEngine
 
 
 # ============================================================================
@@ -86,9 +87,11 @@ def sample_story_context():
 def sample_ai_response():
     """Пример корректного ответа от AI"""
     return {
-        'teacher': "I know where the key is! It's in the old house on the hill.",
+        'response': "I know where the key is! It's in the old house on the hill.",
         'correction': "Great job! Your English is very good.",
         'npc_action': "smiles warmly",
+        'advance': True,
+        'classification': 'on_topic',
         'text_trs': {
             'ru': "Я знаю где ключ! Он в старом доме на холме."
         },
@@ -128,7 +131,7 @@ class TestDialogueEngine:
             )
 
             # Проверяем структуру результата
-            assert 'teacher' in result
+            assert 'response' in result
             assert 'correction' in result
             assert result['npc_name'] == 'John'
             assert result['npc_id'] == 1
@@ -136,7 +139,7 @@ class TestDialogueEngine:
             # Проверяем что AI был вызван правильно
             mock_ai.assert_called_once()
             call_args = mock_ai.call_args
-            assert call_args[1]['iModel'] == 4  # GPT-4o
+            assert call_args[1]['iModel'] == 0  # GPT-4o
 
     @pytest.mark.asyncio
     async def test_generate_npc_response_with_markdown(
@@ -162,7 +165,7 @@ class TestDialogueEngine:
             )
 
             # Парсинг должен пройти успешно
-            assert 'teacher' in result
+            assert 'response' in result
             assert 'correction' in result
 
     @pytest.mark.asyncio
@@ -188,7 +191,7 @@ class TestDialogueEngine:
             )
 
             # Должен вернуть fallback ответ
-            assert result['teacher'] == f"I'm {sample_npc_context['name']}. Could you say that again?"
+            assert result['response'] == f"I'm {sample_npc_context['name']}. Could you say that again?"
             assert result['npc_name'] == 'John'
 
     @pytest.mark.asyncio
@@ -210,7 +213,7 @@ class TestDialogueEngine:
         """Тест валидации с отсутствующим полем"""
 
         invalid_response = {
-            'teacher': 'Hello'
+            'response': 'Hello'
             # Нет 'correction'
         }
 
@@ -220,14 +223,14 @@ class TestDialogueEngine:
         assert "Missing required field" in str(exc_info.value)
 
     @pytest.mark.asyncio
-    async def test_validate_response_empty_teacher(
+    async def test_validate_response_empty_response(
             self,
             dialogue_engine
     ):
-        """Тест валидации с пустым teacher"""
+        """Тест валидации с пустым response"""
 
         invalid_response = {
-            'teacher': '',
+            'response': '',
             'correction': 'Good job'
         }
 
@@ -246,11 +249,11 @@ class TestDialogueEngine:
 
         result = dialogue_engine._create_fallback_response(sample_npc_context)
 
-        assert 'teacher' in result
+        assert 'response' in result
         assert 'correction' in result
         assert result['npc_id'] == 1
         assert result['npc_name'] == 'John'
-        assert 'Could you say that again?' in result['teacher']
+        assert 'Could you say that again?' in result['response']
 
     @pytest.mark.asyncio
     async def test_save_interaction(self, dialogue_engine):
@@ -290,7 +293,7 @@ class TestDialogueEngine:
         }
 
         with patch('fpgDB.fExec_SelectQuery_args', new_callable=AsyncMock) as mock_select:
-            mock_select.return_value = [(json.dumps(success_conditions),)]
+            mock_select.return_value = [(json.dumps(success_conditions), json.dumps([]), None)]
 
             recent_interaction = {
                 'user_input': 'Can you help me find the key?',
@@ -321,7 +324,7 @@ class TestDialogueEngine:
         }
 
         with patch('fpgDB.fExec_SelectQuery_args', new_callable=AsyncMock) as mock_select:
-            mock_select.return_value = [(json.dumps(success_conditions),)]
+            mock_select.return_value = [(json.dumps(success_conditions), json.dumps([]), None)]
 
             recent_interaction = {
                 'user_input': 'Hello',
@@ -352,7 +355,7 @@ class TestDialogueEngine:
         }
 
         with patch('fpgDB.fExec_SelectQuery_args', new_callable=AsyncMock) as mock_select:
-            mock_select.return_value = [(json.dumps(success_conditions),)]
+            mock_select.return_value = [(json.dumps(success_conditions), json.dumps([]), None)]
 
             recent_interaction = {
                 'interaction_type': 'item_use'
