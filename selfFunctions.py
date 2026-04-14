@@ -363,10 +363,7 @@ async def fProcessRecommendedWord(varStr, strOriginal, pool, vUserID, nlp_tools)
 
 
 def fGetImg(vMark):
-    python_folder = os.path.dirname(sys.executable)
-    if os.path.basename(python_folder) == 'bin':
-        python_folder = os.path.dirname(python_folder)
-    logger.info(f'--------------------python_folder:{python_folder}')
+    python_folder = os.path.dirname(os.path.abspath(__file__))
     if vMark == 'menu':
         name = random.choice(
             [
@@ -449,8 +446,87 @@ async def afDelFile(file_path):
         print(f"Error occurred while deleting file {file_path}: {e}")
 
 
-#nm_img = "img_menu_01.jpg"
-#vTxt = fImageAddQuote(nm_img)
+def fImageAddQuote(cImgPath):
+    quoteArray = [
+        ["Ludwig Wittgenstein", "The limits of my language are the limits of my world"],
+        ["Charlemagne", "To have another language is to possess a second soul"],
+        ["Frank Smith", "Learning a new language is becoming a member of the club - the community of speakers of that language"],
+        ["Benjamin Lee Whorf", "Language shapes the way we think, and determines what we can think about"],
+        ["Saint Augustine", "The world is a book, and those who do not travel read only one page"],
+        ["Franz Kafka", "To learn a new language is to enter a new world"],
+        ["Frank Smith", "One language sets you in a corridor for life. Two languages open every door along the way"],
+        ["Ahmed Deedat", "Language is the key to the heart of people"],
+        ["Edmund de Waal", "With languages, you are at home anywhere"],
+        ["Mark Amidon", "Language is the means of getting an idea from my brain into yours without surgery"],
+        ["Rita Mae Brown", "Language is the road map of a culture. It tells you where its people come from and where they are going"],
+        ["Ludwig Wittgenstein", "The limits of my language mean the limits of my world"],
+        ["Nelson Mandela", "If you talk to a man in a language he understands, that goes to his head. If you talk to him in his own language, that goes to his heart"],
+        ["Federico Fellini", "A different language is a different vision of life"],
+        ["Henry Boye", "The most important trip you may take in life is meeting people halfway"],
+        ["Tomáš Garrigue Masaryk", "The more languages you know, the more you are human"],
+        ["Samuel Johnson", "Language is the dress of thought"],
+        ["Oliver Wendell Holmes", "Language is the blood of the soul into which thoughts run and out of which they grow"],
+        ["James Humes", "The art of communication is the language of leadership"],
+        ["Geoffrey Willansa", "You can never understand one language until you understand at least two"],
+        ["Winston Churchill", "Success is not final, failure is not fatal: It is the courage to continue that counts"],
+        ["Theodore Roosevelt", "Believe you can and you're halfway there"],
+        ["Susan Johanson", "The harder you work for something, the greater you'll feel when you achieve it"],
+        ["Mark Twain", "The secret of getting ahead is getting started"],
+        ["Zig Ziglar", "You don't have to be great to start, but you have to start to be great"],
+        ["Lao Tzu", "The journey of a thousand miles begins with one step"],
+        ["Nelson Mandela", "It always seems impossible until it's done"],
+        ["Bo Bennett", "Success is not in what you have, but who you are"],
+        ["Bo Jackson", "Set your goals high, and don't stop till you get there"],
+        ["Arnold H. Glasow", "Success is not the result of spontaneous combustion You must set yourself on fire"],
+        ["Charles Kingsleigh", "The only way to achieve the impossible is to believe it is possible"],
+        ["Martin Luther King Jr.", "You don't have to see the whole staircase, just take the first step"],
+        ["Confucius", "It does not matter how slowly you go as long as you do not stop"],
+        ["Winston S. Churchill", "Success is stumbling from failure to failure with no loss of enthusiasm"],
+    ]
+
+    arrSingleQuote = random.choice(quoteArray)
+
+    font_path = config.font_path
+    text_color = "#860c75"
+    outline_color = "white"
+    outline_width = 5
+
+    cImage = Image.open(cImgPath)
+    draw = ImageDraw.Draw(cImage)
+
+    text = arrSingleQuote[1]
+    font_size = 50
+    font = ImageFont.truetype(font_path, font_size)
+    numStr = math.ceil(len(textwrap.wrap(text, width=27)))
+    margin = 50
+    gapQuoteAuthor = 50
+    offset = int((500 - gapQuoteAuthor - 15 - numStr * 60) / 2)
+    for line in textwrap.wrap(text, width=27):
+        draw.text((margin, offset), line, font=font, fill=text_color, stroke_width=outline_width, stroke_fill=outline_color)
+        offset += 60
+
+    txtAuthor = arrSingleQuote[0]
+    txtArr = txtAuthor.split(' ')
+    txtArrLen = len(txtArr)
+    txtLen = len(txtAuthor)
+    if txtArrLen > 0:
+        lettCap = txtArrLen
+        lettSpace = txtArrLen - 1
+        lettSmall = txtLen - lettCap - lettSpace
+    else:
+        lettCap = lettSpace = lettSmall = 0
+        txtAuthor = ""
+    txtLenPx = lettCap * 21 + lettSpace * 7 + lettSmall * 12
+    margin = int(700 - txtLenPx / 2)
+    offset = int((500 + gapQuoteAuthor - 15 + 60 * numStr) / 2)
+    font_size = 30
+    font = ImageFont.truetype(font_path, font_size)
+    draw.multiline_text((margin, offset), txtAuthor, font=font, fill=text_color, stroke_width=outline_width, stroke_fill=outline_color, anchor='mm')
+
+    python_folder = os.path.dirname(os.path.abspath(__file__))
+    imgFileName = os.path.join(python_folder, 'storage', f"{str(uuid.uuid4())}.jpg")
+    cImage.save(imgFileName)
+    return imgFileName
 
 async def fCalcToken(v_ModelID, v_prompt_token, v_completion_token, pool, vUserID):
     var_query = (

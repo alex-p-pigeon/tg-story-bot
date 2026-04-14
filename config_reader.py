@@ -27,10 +27,10 @@ class Settings(BaseSettings):
 
     if os.name == 'nt':
         font_path: ClassVar[str] = r"C:\Windows\Fonts\constan.ttf"
-        model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8')
+        model_config = SettingsConfigDict(env_file='.env', env_file_encoding='utf-8', extra='ignore')
     else:
         script_dir: ClassVar[Path] = Path(__file__).parent
-        model_config = SettingsConfigDict(env_file=str(script_dir / 'env.env'), env_file_encoding='utf-8')
+        model_config = SettingsConfigDict(env_file=str(script_dir / 'env.env'), env_file_encoding='utf-8', extra='ignore')
         font_path: ClassVar[str] = "/usr/share/fonts/truetype/vista/constan.ttf"
 
 

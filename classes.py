@@ -554,7 +554,7 @@ class AsyncNLPTools:
 
     def _init_and_warmup_tool(self):
         """Initialize LanguageTool and perform warm-up check"""
-        tool = language_tool_python.LanguageTool('en-US')
+        tool = language_tool_python.LanguageTool('en-US', language_tool_download_version='6.4')
         # Warm-up call
         _ = tool.check("This is a warm-up sentence")
         return tool
