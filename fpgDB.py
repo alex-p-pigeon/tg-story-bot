@@ -12,18 +12,11 @@ logging.basicConfig(
 )
 '''
 
-async def fPool_Init(toggleDB = 1):
-    print('toggleDB', toggleDB)
-    if toggleDB == 1:
-        host = 'localhost'
-        port = config.DB_PORT.get_secret_value()
-        user = config.DB_USER.get_secret_value()
-        password = config.DB_PASSWORD.get_secret_value()
-    else:       #direct prod connection (for newsppr generation script
-        host = config.PROD_DB_HOST.get_secret_value()
-        port = config.PROD_DB_PORT.get_secret_value()
-        user = config.PROD_DB_USER.get_secret_value()
-        password = config.PROD_DB_PASSWORD.get_secret_value()
+async def fPool_Init(toggleDB=1):
+    host = 'localhost'
+    port = config.DB_PORT.get_secret_value()
+    user = config.DB_USER.get_secret_value()
+    password = config.DB_PASSWORD.get_secret_value()
     database = config.DB_NAME.get_secret_value()
     pool_base = await asyncpg.create_pool(
         user=user,

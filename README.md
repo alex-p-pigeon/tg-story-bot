@@ -90,7 +90,6 @@ cp .env.example .env
 | `BOT_NAME` | Bot username (without @) |
 | `DB_USER` / `DB_PASSWORD` / `DB_PORT` / `DB_NAME` | PostgreSQL connection (main DB) |
 | `DBLOG_NAME` | PostgreSQL database name for logs |
-| `PROD_DB_HOST` / `PROD_DB_PORT` / `PROD_DB_USER` / `PROD_DB_PASSWORD` | Production DB (optional, for deploy) |
 | `OPENAI_API_KEY` | OpenAI API key — story generation and NPC dialogue |
 | `GGL_API_KEY` | Google API key — Translation API |
 

@@ -16,10 +16,6 @@ class Settings(BaseSettings):
     BOT_NAME: SecretStr
     DB_NAME: SecretStr
     DBLOG_NAME: SecretStr
-    PROD_DB_HOST: SecretStr
-    PROD_DB_PORT: SecretStr
-    PROD_DB_USER: SecretStr
-    PROD_DB_PASSWORD: SecretStr
 
     URL_AGR: ClassVar[str] = "https://pigeoncorner.github.io/tg_app_lingo/index.html?page=agreement"
     URL_TZ: ClassVar[str] = "https://pigeoncorner.github.io/tg_app_lingo/index.html?page=timezone"
