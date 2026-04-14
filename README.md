@@ -4,11 +4,19 @@ A Telegram bot that generates and runs **AI-powered interactive stories** for En
 
 ## What it does
 
-- Generates a multi-scene story skeleton via GPT-4o based on user-selected genre and goal
-- Presents each scene with 3–4 choices; the story branches based on user decisions
-- Produces NPC dialogue with voice messages (Google Cloud TTS)
-- Tracks collected items, NPC interactions, and story progress in PostgreSQL
-- Delivers a report at the end with grammar mistakes and vocabulary highlights
+1. **Generates** a multi-scene story skeleton via GPT-4o — user picks genre, mood, realism level, and a main goal; the AI returns a structured JSON graph of scenes, NPCs, and items
+2. **Runs** the story scene by scene — each scene shows a description, 3–4 choice buttons, and optional NPC dialogue; user decisions drive the branch taken
+3. **Talks back** — NPCs respond to free-text user input via GPT-4o, correcting grammar in real time and delivering their lines as voice messages (Google Cloud TTS)
+4. **Tracks state** — collected items, NPC relationship flags, revealed facts, and scene progress are persisted in PostgreSQL; FSM state lives in Redis
+5. **Reports** — at story end, delivers a summary of grammar mistakes, vocabulary used, and NPC interactions
+
+## Key design choices
+
+- **Layered architecture** — story logic is split into generators (AI prompt → JSON skeleton), engines (session orchestration, dialogue), managers (NPC/item state), and systems (narrator). Each layer has a single responsibility and is independently testable.
+- **Structured AI output** — GPT-4o is prompted to return strict JSON with a defined schema; `_parse_ai_response` validates required fields and strips markdown code fences before parsing, so malformed AI output never crashes the session.
+- **Async throughout** — aiogram 3.x, asyncpg, and the OpenAI async client; no blocking calls in handlers. Redis-backed FSM means state survives bot restarts.
+- **Grammar feedback in-flow** — NPC dialogue responses include a `correction` field alongside the NPC's actual line, so the learner gets feedback without leaving the story context.
+- **Graceful fallbacks** — every AI call has a `_create_fallback_*` path; if GPT-4o returns bad JSON the scene continues with a safe default rather than an error message.
 
 ## Architecture
 
@@ -41,7 +49,16 @@ User message / callback
 
 ## Local setup
 
-**Prerequisites:** Python 3.10+, PostgreSQL, Redis
+### Prerequisites
+
+- Python 3.10+
+- PostgreSQL 14+ — [download](https://www.postgresql.org/download/)
+- Redis 7+ — [download](https://redis.io/download/) (used for FSM state storage)
+- OpenAI API key — [platform.openai.com](https://platform.openai.com/api-keys)
+- Telegram bot token — [@BotFather](https://t.me/BotFather)
+- Google Cloud service account with Text-to-Speech API enabled (for NPC voice messages)
+
+### Installation
 
 ```bash
 git clone https://github.com/alex-p-pigeon/tg-story-bot.git
@@ -52,16 +69,42 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-Copy `.env.example` to `.env` and fill in your credentials:
+### Database
+
+```bash
+createdb your_db_name
+psql your_db_name < schema.sql
+```
+
+### Configuration
 
 ```bash
 cp .env.example .env
+# Fill in your values
 ```
 
-Run:
+| Variable | Description |
+|---|---|
+| `BOT_TOKEN` | Telegram bot token from [@BotFather](https://t.me/BotFather) |
+| `TG_API_ID` / `TG_API_HASH` | Telegram API credentials from [my.telegram.org](https://my.telegram.org) |
+| `BOT_NAME` | Bot username (without @) |
+| `DB_USER` / `DB_PASSWORD` / `DB_PORT` / `DB_NAME` | PostgreSQL connection (main DB) |
+| `DBLOG_NAME` | PostgreSQL database name for logs |
+| `PROD_DB_HOST` / `PROD_DB_PORT` / `PROD_DB_USER` / `PROD_DB_PASSWORD` | Production DB (optional, for deploy) |
+| `OPENAI_API_KEY` | OpenAI API key — story generation and NPC dialogue |
+| `GGL_API_KEY` | Google API key — Translation API |
+
+### Run
 
 ```bash
+redis-server          # start Redis (if not running)
 python eng_main.py
+```
+
+## Running tests
+
+```bash
+pytest handlers/learnpath/story/tests/ -v
 ```
 
 ## Project structure
