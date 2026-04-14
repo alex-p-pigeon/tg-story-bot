@@ -1,5 +1,6 @@
 venv/
 story/
+.venv/
 .env
 __pycache__/
 *.pyc
