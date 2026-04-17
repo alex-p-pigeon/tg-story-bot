@@ -40,7 +40,7 @@ User message / callback
 
 ### Component diagram
 
-<img src="docs/architecture.svg" alt="Architecture diagram" width="700">
+<img src="docs/app_arch.svg" alt="Architecture diagram" width="700">
 
 ## Stack
 
